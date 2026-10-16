@@ -1,5 +1,18 @@
 # Changelog
 
+## 2.2.0 — 2026-10-16
+
+### Nouveautés
+
+- **Une carte plus courte** : la nouvelle option `show_update_time`
+  (« Afficher l'heure de mise à jour » dans l'éditeur) permet de retirer la
+  ligne « Mis à jour » en bas de la carte.
+- **Une vignette sans fond** : la nouvelle option `transparent_map`
+  (« Vignette sans fond gris ») retire le fond gris derrière la carte de
+  France, qui prend alors le fond de la carte Lovelace. Le libellé
+  « Paris - Petite couronne » reste masquable : il est découpé dans l'image
+  au lieu d'être recouvert.
+
 ## 2.1.0 — 2026-10-07
 
 ### Nouveautés

@@ -349,6 +349,8 @@ Les deux axes sont indépendants — seize combinaisons.
 | `hide_map_inset` | `false` | Masque le libellé « Paris - Petite couronne » de la vignette |
 | `map_width` | — | Largeur maxi de la vignette, en pixels — la hauteur de la carte se réduit d'autant |
 | `force_columns` | `false` | En `duo`, garde les deux jours côte à côte même sur un écran étroit |
+| `transparent_map` | `false` | Retire le fond gris derrière la vignette, qui prend alors le fond de la carte |
+| `show_update_time` | `true` | La ligne « Mis à jour » en bas de la carte |
 | `tap_action` | `more-info` | Action au clic |
 | `hold_action` | `more-info` | Action à l'appui long |
 | `double_tap_action` | `none` | Action au double clic |

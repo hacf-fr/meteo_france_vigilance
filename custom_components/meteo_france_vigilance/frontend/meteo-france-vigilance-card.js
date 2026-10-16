@@ -75,6 +75,8 @@ const DEFAULTS = {
   alert_only: false,
   hide_map_inset: false,
   force_columns: false,
+  transparent_map: false,
+  show_update_time: true,
   // Le comportement d'avant, mais dit à voix haute et donc remplaçable : un
   // clic ouvre la fiche de ce qu'on a cliqué — le capteur sur le bloc du jour,
   // la caméra sur la vignette. C'est ce que « more-info » sans `entity` fait.
@@ -215,6 +217,8 @@ const WORDS = {
     hideMapInset: "Masquer le libellé « Paris - Petite couronne »",
     mapWidth: "Largeur maxi de la carte (px)",
     forceColumns: "Deux jours côte à côte, même à l'étroit (duo)",
+    transparentMap: "Vignette sans fond gris",
+    showUpdateTime: "Afficher l'heure de mise à jour",
     tapAction: "Au clic",
     holdAction: "À l'appui long",
     doubleTapAction: "Au double clic",
@@ -263,6 +267,8 @@ const WORDS = {
     hideMapInset: "Hide the “Paris - Petite couronne” label",
     mapWidth: "Map max width (px)",
     forceColumns: "Both days side by side, even when narrow (duo)",
+    transparentMap: "Map without grey background",
+    showUpdateTime: "Show update time",
     tapAction: "Tap action",
     holdAction: "Hold action",
     doubleTapAction: "Double tap action",
@@ -618,7 +624,9 @@ class MeteoFranceVigilanceCard extends HTMLElement {
     updater();
 
     // La date d'émission est la même pour toutes les périodes : lue une fois.
-    const stamp = this._state(resolved, this._periods()[0])?.attributes.update_time;
+    const stamp =
+      this._config.show_update_time &&
+      this._state(resolved, this._periods()[0])?.attributes.update_time;
     this._parts.foot.textContent = stamp
       ? `${words(this._hass).updated} ${new Date(stamp).toLocaleString(
           this._hass.locale?.language || "fr",
@@ -654,7 +662,7 @@ class MeteoFranceVigilanceCard extends HTMLElement {
         // Un seul jour n'a rien à mettre à côté de lui : il garde toute la
         // largeur au lieu d'en laisser la moitié vide.
         this._config.force_columns && periods.length > 1 ? " force-columns" : ""
-      }">
+      }${this._config.transparent_map ? " transparent-map" : ""}">
         <div class="title"></div>
         <div class="error" style="display:none"></div>
         <div class="body">${body}</div>
@@ -1480,6 +1488,19 @@ class MeteoFranceVigilanceCard extends HTMLElement {
       }
       .hide-inset .inset-mask { display: block; }
 
+      .transparent-map img.map { background: transparent; }
+      .transparent-map .inset-mask { display: none; }
+      .transparent-map.hide-inset img.map,
+      .transparent-map.hide-inset .map-wrap::after {
+        clip-path: polygon(evenodd,
+          0 0, 100% 0, 100% 100%, 0 100%, 0 0,
+          ${INSET_BOX.left} ${INSET_BOX.top},
+          calc(${INSET_BOX.left} + ${INSET_BOX.width}) ${INSET_BOX.top},
+          calc(${INSET_BOX.left} + ${INSET_BOX.width}) calc(${INSET_BOX.top} + ${INSET_BOX.height}),
+          ${INSET_BOX.left} calc(${INSET_BOX.top} + ${INSET_BOX.height}),
+          ${INSET_BOX.left} ${INSET_BOX.top});
+      }
+
       /* Au-dessus du calque d'encre et du masque : ils portent leur propre
          couleur et n'ont rien à voir avec la vignette. */
       .stale, .overlay { z-index: 2; }
@@ -1826,6 +1847,8 @@ class MeteoFranceVigilanceCardEditor extends HTMLElement {
           { name: "alert_only", selector: { boolean: {} } },
           { name: "hide_map_inset", selector: { boolean: {} } },
           { name: "force_columns", selector: { boolean: {} } },
+          { name: "transparent_map", selector: { boolean: {} } },
+          { name: "show_update_time", selector: { boolean: {} } },
         ],
       },
       {
@@ -1906,6 +1929,8 @@ class MeteoFranceVigilanceCardEditor extends HTMLElement {
           hide_map_inset: t.hideMapInset,
           map_width: t.mapWidth,
           force_columns: t.forceColumns,
+          transparent_map: t.transparentMap,
+          show_update_time: t.showUpdateTime,
           tap_action: t.tapAction,
           hold_action: t.holdAction,
           double_tap_action: t.doubleTapAction,
