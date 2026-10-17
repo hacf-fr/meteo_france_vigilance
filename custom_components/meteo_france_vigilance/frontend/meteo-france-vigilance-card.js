@@ -611,7 +611,9 @@ class MeteoFranceVigilanceCard extends HTMLElement {
     this._parts.error.style.display = "none";
     this._parts.body.style.display = "";
 
-    const title = this._config.title ?? this._defaultTitle(resolved);
+    // Un titre fait d'espaces est un titre vide : `title: " "` est la façon
+    // naturelle de dire « pas de titre », et il laissait une ligne blanche.
+    const title = String(this._config.title ?? this._defaultTitle(resolved)).trim();
     this._parts.title.textContent = title;
     this._parts.title.style.display = title ? "" : "none";
 

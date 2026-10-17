@@ -337,7 +337,7 @@ Les deux axes sont indépendants — seize combinaisons.
 | Option | Défaut | Rôle |
 |---|---|---|
 | `entity` | — | Un capteur de vigilance de l'intégration. **Obligatoire.** |
-| `title` | `Vigilance <département>` | `""` pour ne pas afficher de titre |
+| `title` | `Vigilance <département>` | `""` (ou `" "`) pour ne pas afficher de titre |
 | `periods` | `both` | `both`, `today` ou `tomorrow` |
 | `layout` | `duo` | `duo`, `focus`, `compact`, `chronologie` |
 | `theme` | `officiel` | `officiel`, `bandeau`, `plein`, `sobre` |

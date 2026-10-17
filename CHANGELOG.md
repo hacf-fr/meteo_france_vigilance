@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.2.1 — 2026-10-17
+
+### Corrections
+
+- **Un titre fait d'espaces masque le titre** : `title: " "` laissait une
+  ligne vide en haut de la carte. Il vaut désormais `title: ""` : plus de
+  titre, plus d'espace.
+
 ## 2.2.0 — 2026-10-16
 
 ### Nouveautés
