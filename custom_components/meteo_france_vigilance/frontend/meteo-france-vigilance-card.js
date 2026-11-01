@@ -158,16 +158,14 @@ const NATIVE_NAMES = {
     grey: "Gris",
     blue: "Bleu",
     blue_grey: "Bleu-gris",
-    orange_hatched: "Orange cyclonique",
-    red_hatched: "Rouge cyclonique",
+    pre_alert: "Pré-alerte",
   },
   en: {
     purple: "Purple",
     grey: "Grey",
     blue: "Blue",
     blue_grey: "Blue-grey",
-    orange_hatched: "Cyclonic orange",
-    red_hatched: "Cyclonic red",
+    pre_alert: "Pre-alert",
   },
 };
 
@@ -176,12 +174,14 @@ const NATIVE_NOTICE = {
     purple: "Confinez-vous",
     grey: "Restez prudent",
     blue_grey: "Phase de sauvegarde",
+    pre_alert: "Menace cyclonique",
     blue: "Pas de vigilance particulière",
   },
   en: {
     purple: "Stay indoors",
     grey: "Remain cautious",
     blue_grey: "Recovery phase",
+    pre_alert: "Cyclone threat",
     blue: "No particular vigilance",
   },
 };

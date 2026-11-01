@@ -231,9 +231,9 @@ class VigilanceOmCoordinator(DataUpdateCoordinator[VigilanceData]):
     ) -> str | None:
         """La phase cyclonique du bassin, si le bassin en connaît une.
 
-        Distincte de l'intensité : dans l'océan Indien, « orange hachuré » est
-        une vigilance orange doublée d'une menace cyclonique. C'est ce que
-        publiera un capteur à part.
+        Distincte de l'intensité : une vigilance orange pour fortes pluies
+        n'est pas une alerte orange cyclonique. C'est ce que publiera un
+        capteur à part.
         """
         if not basin_has_cyclone(code):
             return None

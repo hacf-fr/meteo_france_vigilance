@@ -157,7 +157,15 @@ BASINS: Final[dict[str, dict[str, Any]]] = {
         "page": "guyane",
         "cyclone": False,
     },
-    "VIGI974": {"name": "La Réunion", "scale": SCALE_INDIAN, "page": "la-reunion"},
+    # La Réunion est passée à la vigilance « quatre couleurs » : le
+    # service ne la publie que sous ce type, et répond « 502 Data not loaded »
+    # à la demande ordinaire. Les autres bassins refusent ce type (404).
+    "VIGI974": {
+        "name": "La Réunion",
+        "scale": SCALE_INDIAN,
+        "page": "la-reunion",
+        "warning_type": "vigilance4colors",
+    },
     "VIGI976": {"name": "Mayotte", "scale": SCALE_INDIAN, "page": "mayotte"},
     # Le site ne publie pas de page pour les îles du Nord.
     "VIGI978-977": {
@@ -204,9 +212,11 @@ OM_PHENOMENA: Final[dict[str, dict[str, str]]] = {
 # technique de l'API, comprise comme « pas de vigilance particulière » et
 # ramenée au vert.
 #
-# Dans l'océan Indien, les niveaux 3 et 4 sont « hachurés » : une vigilance
-# ordinaire doublée d'une menace cyclonique. Ils valent orange et rouge, la
-# menace étant portée par le capteur de phase cyclonique.
+# Dans l'océan Indien, les niveaux 1 à 4 sont la vigilance ordinaire, comme en
+# métropole, et les niveaux 6 à 10 ceux de l'alerte cyclonique. L'ancien
+# barème de la Réunion faisait des niveaux 3 et 4 un orange et un rouge
+# « hachurés », doublés d'une menace cyclonique ; Météo France l'a abandonné,
+# et Mayotte publie déjà ce barème-ci.
 COLORS_BY_SCALE: Final[dict[str, dict[int, dict[str, str | None]]]] = {
     SCALE_ANTILLES: {
         # Le descriptif technique est explicite : « 1 : vert ("-1" pour le
@@ -227,10 +237,10 @@ COLORS_BY_SCALE: Final[dict[str, dict[int, dict[str, str | None]]]] = {
         -1: {"color": "green", "native": None, "name": "Vert"},
         1: {"color": "green", "native": None, "name": "Vert"},
         2: {"color": "yellow", "native": None, "name": "Jaune"},
-        3: {"color": "orange", "native": "orange_hatched", "name": "Orange hachuré"},
-        4: {"color": "red", "native": "red_hatched", "name": "Rouge hachuré"},
+        3: {"color": "orange", "native": None, "name": "Orange"},
+        4: {"color": "red", "native": None, "name": "Rouge"},
         6: {"color": "green", "native": "blue_grey", "name": "Bleu-gris"},
-        7: {"color": "yellow", "native": None, "name": "Jaune"},
+        7: {"color": "yellow", "native": "pre_alert", "name": "Pré-alerte"},
         8: {"color": "orange", "native": None, "name": "Orange"},
         9: {"color": "red", "native": None, "name": "Rouge"},
         10: {"color": "red", "native": "purple", "name": "Violet"},
@@ -244,8 +254,9 @@ NATIVE_HEX: Final[dict[str, str]] = {
     "purple": "#903078",
     "grey": "#999999",
     "blue_grey": "#5f8dd3",
-    "orange_hatched": "#f28c00",
-    "red_hatched": "#e01f1f",
+    # Météo France dessine la pré-alerte en blanc, invisible sur une carte
+    # claire : elle garde le jaune de la couleur à laquelle elle se ramène.
+    "pre_alert": "#f2d600",
 }
 
 # Phase cyclonique, publiée en capteur séparé là où le bassin la connaît.
@@ -263,11 +274,12 @@ CYCLONE_PHASES: Final[dict[str, dict[int, str]]] = {
         6: "grey",
     },
     SCALE_INDIAN: {
-        # Les niveaux « hachurés » disent une vigilance doublée d'une menace
-        # cyclonique : c'est bien une phase d'alerte, à son niveau.
-        3: "orange",
-        4: "red",
+        # Seuls les niveaux cycloniques (6 à 10) disent une phase : un orange
+        # ou un rouge ordinaire est une vigilance, pas une alerte cyclonique.
         6: "grey",  # bleu-gris : la phase de sauvegarde, après le passage
+        # La pré-alerte. Elle garde l'état « yellow », celui de l'ancienne
+        # alerte jaune qu'elle remplace : la liste des états est écrite dans
+        # le registre, et la changer casserait les entités existantes.
         7: "yellow",
         8: "orange",
         9: "red",

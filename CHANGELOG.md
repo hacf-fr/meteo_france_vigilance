@@ -1,5 +1,22 @@
 # Changelog
 
+## 2.2.2 — 2026-11-01
+
+### Corrections
+
+- **La Réunion retrouve sa vigilance** : Météo-France a changé de barème pour
+  La Réunion et ne publie plus son bulletin sous l'ancienne forme. Le service
+  répondait « 502 Bad Gateway », et l'intégration restait en « Échec de la
+  configuration, nouvel essai ». Elle demande désormais le nouveau bulletin.
+- **Une vigilance orange n'est plus une alerte cyclonique** (La Réunion,
+  Mayotte) : les niveaux orange et rouge ordinaires étaient lus comme un
+  orange et un rouge « hachurés », doublés d'une menace cyclonique, et
+  passaient le capteur de phase cyclonique en alerte orange ou rouge. Seuls
+  les niveaux cycloniques le font maintenant.
+- **La pré-alerte cyclonique porte son nom** : le capteur de phase affichait
+  « Vigilance jaune », il affiche « Pré-alerte ». L'état reste `yellow` : les
+  automatisations existantes continuent de fonctionner.
+
 ## 2.2.1 — 2026-10-17
 
 ### Corrections

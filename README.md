@@ -195,12 +195,12 @@ demandée que si vous suivez des départements métropolitains.
 
 * **L'alerte cyclonique**, un phénomène que la métropole ignore, avec sa
   propre chronologie.
-* **Un capteur de phase cyclonique** par territoire — `Aucune`, `Alerte
-  orange`, `Alerte rouge`, `Alerte violette`, `Phase de sauvegarde`. Il est
-  distinct de la couleur : dans l'océan Indien, une vigilance orange peut être
-  doublée d'une menace cyclonique, et les deux méritent chacune leur
-  déclencheur. Pas de capteur en Guyane, que Météo-France n'inclut pas dans le
-  dispositif.
+* **Un capteur de phase cyclonique** par territoire — `Aucune`,
+  `Pré-alerte` (océan Indien), `Alerte orange`, `Alerte rouge`, `Alerte
+  violette`, `Phase de sauvegarde`. Il est distinct de la couleur : une
+  vigilance orange pour fortes pluies n'est pas une alerte orange cyclonique,
+  et les deux méritent chacune leur déclencheur. Pas de capteur en Guyane, que
+  Météo-France n'inclut pas dans le dispositif.
 * **Le violet et le gris.** L'échelle des Antilles va au-delà du rouge : le
   violet dit « confinez-vous », le gris « restez prudent » après le passage du
   phénomène. L'état du capteur reste `red` — pour qu'une automatisation écrite

@@ -86,8 +86,8 @@ async def async_setup_entry(
                 VigilanceSensor(runtime.outre_mer, code, description)
                 for description in OM_SENSORS
             ]
-            # La phase cyclonique est une dimension à part de l'intensité : un
-            # « orange hachuré » est une vigilance orange doublée d'une menace
+            # La phase cyclonique est une dimension à part de l'intensité : une
+            # vigilance orange pour fortes pluies n'est pas une alerte orange
             # cyclonique. Elle n'existe que là où le bassin la connaît — ni en
             # métropole, ni en Guyane.
             if basin_has_cyclone(code):
@@ -185,10 +185,10 @@ class VigilanceSensor(VigilanceEntity, SensorEntity):
 class CyclonePhaseSensor(VigilanceEntity, SensorEntity):
     """La phase d'alerte cyclonique d'un bassin d'outre-mer.
 
-    Séparée de la couleur de vigilance parce qu'elle en est indépendante :
-    dans l'océan Indien, « orange hachuré » est une vigilance orange doublée
-    d'une menace cyclonique, et les deux informations méritent chacune leur
-    déclencheur. Les phases sont un dispositif préfectoral, pas une donnée
+    Séparée de la couleur de vigilance parce qu'elle en est indépendante : un
+    bassin peut être en vigilance orange pour les pluies sans alerte
+    cyclonique, ou en pré-alerte cyclonique sans vigilance, et les deux
+    informations méritent chacune leur déclencheur. Les phases sont un dispositif préfectoral, pas une donnée
     d'API : leur liste est donc écrite une fois pour toutes.
     """
 

@@ -98,7 +98,7 @@
         "name": "Phase cyclonique",
         "state": {
           "none": "Aucune",
-          "yellow": "Vigilance jaune",
+          "yellow": "Pré-alerte",
           "orange": "Alerte orange",
           "red": "Alerte rouge",
           "purple": "Alerte violette",

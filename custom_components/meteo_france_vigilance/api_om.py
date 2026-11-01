@@ -30,6 +30,7 @@ from .const import (
     API_RETRIES,
     API_RETRY_DELAY,
     API_TIMEOUT,
+    BASINS,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -56,6 +57,12 @@ class VigilanceOmApi:
         """
         url = f"{API_OM_BASE}/{path}"
         params = {"domain": domain, "token": API_OM_TOKEN}
+        # Le type de vigilance, pour les bassins qui en ont changé : sans lui,
+        # la Réunion n'a plus de bulletin. Le dictionnaire suit le même type,
+        # sans quoi il nommerait les niveaux de l'ancien barème.
+        warning_type = BASINS.get(domain, {}).get("warning_type")
+        if warning_type:
+            params["warning_type"] = warning_type
         last_error: Exception | None = None
 
         for attempt in range(1, self._retries + 1):
