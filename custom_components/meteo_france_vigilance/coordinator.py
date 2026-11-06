@@ -216,7 +216,7 @@ class VigilanceCoordinator(DataUpdateCoordinator[VigilanceData]):
                 "reported": reported,
                 "supported": SUPPORTED_VIGILANCE_VERSION,
             },
-            learn_more_url="https://github.com/Pulpyyyy/meteo_france_vigilance/issues",
+            learn_more_url="https://github.com/hacf-fr/meteo_france_vigilance/issues",
         )
 
     def _check_novelties(self, phenomena: list[dict[str, Any]]) -> None:

@@ -4,10 +4,10 @@
 
 # Vigilance Météo France
 
-[![Validate](https://github.com/Pulpyyyy/meteo_france_vigilance/actions/workflows/validate.yml/badge.svg)](https://github.com/Pulpyyyy/meteo_france_vigilance/actions/workflows/validate.yml)
+[![Validate](https://github.com/hacf-fr/meteo_france_vigilance/actions/workflows/validate.yml/badge.svg)](https://github.com/hacf-fr/meteo_france_vigilance/actions/workflows/validate.yml)
 [![HACS](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://github.com/hacs/integration)
-[![Version](https://img.shields.io/github/manifest-json/v/Pulpyyyy/meteo_france_vigilance?filename=custom_components%2Fmeteo_france_vigilance%2Fmanifest.json&label=version)](https://github.com/Pulpyyyy/meteo_france_vigilance/blob/main/CHANGELOG.md)
-[![License: MIT](https://img.shields.io/github/license/Pulpyyyy/meteo_france_vigilance)](LICENSE)
+[![Version](https://img.shields.io/github/manifest-json/v/hacf-fr/meteo_france_vigilance?filename=custom_components%2Fmeteo_france_vigilance%2Fmanifest.json&label=version)](https://github.com/hacf-fr/meteo_france_vigilance/blob/main/CHANGELOG.md)
+[![License: MIT](https://img.shields.io/github/license/hacf-fr/meteo_france_vigilance)](LICENSE)
 
 La carte de vigilance de Météo-France dans Home Assistant — **métropole et
 outre-mer** — avec sa carte Lovelace livrée dans le composant.
@@ -73,10 +73,10 @@ phénomène garde la sienne.
 
 ### Via HACS (recommandé)
 
-[![Ouvrir dans HACS](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=Pulpyyyy&repository=meteo_france_vigilance&category=integration)
+[![Ouvrir dans HACS](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=hacf-fr&repository=meteo_france_vigilance&category=integration)
 
 1. HACS → menu **⋮** → **Dépôts personnalisés**.
-2. Dépôt : `https://github.com/Pulpyyyy/meteo_france_vigilance`, type
+2. Dépôt : `https://github.com/hacf-fr/meteo_france_vigilance`, type
    **Intégration**.
 3. Rechercher **Vigilance Météo France**, télécharger, puis redémarrer Home
    Assistant.
