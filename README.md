@@ -290,10 +290,34 @@ par les attributs que le composant leur donne. Aucun nom d'entité n'est deviné
 
 Quand la zone littorale du département est suivie, la carte la retrouve de la
 même façon : vagues-submersion s'affiche parmi les phénomènes du département,
-et l'en-tête annonce le plus grave des deux niveaux. Les options `alert_only`
-et le thème `plein` en tiennent compte. Les capteurs, eux, restent distincts.
+et l'en-tête annonce le plus grave des deux niveaux, quelle que soit la
+disposition. Les options `alert_only` et le thème `plein` en tiennent compte. Les capteurs, eux, restent distincts.
 Une zone littorale suivie sans son département (`2B10` seul) demande sa propre
 carte, pointée sur son capteur.
+
+| Thème clair | Thème sombre |
+|:---:|:---:|
+| <img src="images/littoral-light.png" alt="La carte de la Gironde sans puis avec son littoral : vagues-submersion orange s'ajoute au vent jaune" width="380"> | <img src="images/littoral-dark.png" alt="La carte de la Gironde sans puis avec son littoral, thème sombre" width="380"> |
+
+La même comparaison dans les autres dispositions :
+
+**`focus`**
+
+| Thème clair | Thème sombre |
+|:---:|:---:|
+| <img src="images/littoral-focus-light.png" alt="Disposition focus : la Gironde sans puis avec son littoral, thème clair" width="380"> | <img src="images/littoral-focus-dark.png" alt="Disposition focus : la Gironde sans puis avec son littoral, thème sombre" width="380"> |
+
+**`compact`**
+
+| Thème clair | Thème sombre |
+|:---:|:---:|
+| <img src="images/littoral-compact-light.png" alt="Disposition compact : la Gironde sans puis avec son littoral, thème clair" width="380"> | <img src="images/littoral-compact-dark.png" alt="Disposition compact : la Gironde sans puis avec son littoral, thème sombre" width="380"> |
+
+**`chronologie`**
+
+| Thème clair | Thème sombre |
+|:---:|:---:|
+| <img src="images/littoral-chrono-light.png" alt="Disposition chronologie : la Gironde sans puis avec son littoral, thème clair" width="380"> | <img src="images/littoral-chrono-dark.png" alt="Disposition chronologie : la Gironde sans puis avec son littoral, thème sombre" width="380"> |
 
 ### Dispositions — `layout`
 

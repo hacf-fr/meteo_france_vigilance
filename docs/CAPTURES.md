@@ -25,6 +25,10 @@ chrome --headless=new --disable-gpu --allow-file-access-from-files \
 | `outre-mer` | les six territoires, un état chacun | 980,1120 |
 | `outre-mer-compact` | les six territoires empilés en compact | 470,600 |
 | `outre-mer-chrono` | chronologie d'une alerte cyclonique | 470,330 |
+| `littoral` | la Gironde sans puis avec sa zone littorale, en duo | 840,600 |
+| `littoral&layout=focus` | la même, en focus → `littoral-focus-<mode>.png` | 840,560 |
+| `littoral&layout=compact` | la même, en compact → `littoral-compact-<mode>.png` | 840,170 |
+| `littoral&layout=chronologie` | la même, en chronologie → `littoral-chrono-<mode>.png` | 840,340 |
 
 Chaque page existe en `mode=light` et `mode=dark`. Les fichiers vont dans
 `images/` sous le nom `<page>-<mode>.png`.

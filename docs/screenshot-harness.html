@@ -116,7 +116,29 @@ const HEX = { green: "#2e9e37", yellow: "#f2d600", orange: "#f28c00", red: "#e01
 const NAMES = { green: "Vert", yellow: "Jaune", orange: "Orange", red: "Rouge" };
 const IDS = { green: 1, yellow: 2, orange: 3, red: 4 };
 
-function franceMap(colorOf) {
+/* La bande littorale, telle que la vignette la dessine : un liseré détaché
+ * de la côte, au large, de la couleur de la zone et cerné d'encre noire.
+ * La côte est retrouvée dans les tracés des départements : à chaque hauteur,
+ * le point le plus à l'ouest dans une fenêtre de quelques pixels. La fenêtre
+ * enjambe les tronçons de côte où le tracé simplifié a peu de points, qui
+ * laisseraient sinon passer un point de la frontière est. */
+function coastBand(codes, color, gap = 3, width = 4, step = 3, window = 9) {
+  const points = codes.flatMap((code) =>
+    [...DEPT_PATHS[code].matchAll(/(\d+),(\d+)/g)].map(([, x, y]) => [+x, +y])
+  );
+  const top = Math.min(...points.map(([, y]) => y));
+  const bottom = Math.max(...points.map(([, y]) => y));
+  const inner = [];
+  for (let y = top; y <= bottom; y += step) {
+    const near = points.filter(([, py]) => Math.abs(py - y) <= window);
+    inner.push([Math.min(...near.map(([x]) => x)) - gap, y]);
+  }
+  const outer = inner.map(([x, y]) => [x - width, y]).reverse();
+  const d = "M" + [...inner, ...outer].map(([x, y]) => `${x},${y}`).join("L") + "Z";
+  return `<path d="${d}" fill="${HEX[color]}" stroke="#222222" stroke-width="0.8" stroke-linejoin="round"/>`;
+}
+
+function franceMap(colorOf, band = "") {
   // Pas de frontières entre départements, comme sur la vraie vignette : seules
   // les zones de couleur se lisent. Chaque tracé est liseré de sa propre
   // couleur pour sceller les coutures d'anti-aliasing entre voisins.
@@ -128,7 +150,7 @@ function franceMap(colorOf) {
   const inset = Object.entries(IDF_PATHS).map((e) => dept(e, 2)).join("");
   const svg =
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500">` +
-    `<g>${country}</g>` +
+    `<g>${country}</g>${band}` +
     `<text x="88" y="34" font-family="Arial" font-size="15" fill="#222222">Paris - Petite couronne</text>` +
     `<rect x="120" y="45" width="72" height="58" fill="none" stroke="#222222" stroke-width="1.5"/>` +
     `<g transform="translate(128,49) scale(0.55)">${inset}</g>` +
@@ -393,6 +415,66 @@ const omNord = basin(states, "om6", "VIGI978-977", "red", "grey", [
   OP(DAY, "wave", "Vagues-submersion", "mdi:waves-arrow-up", "orange", 6, 24),
 ], "grey");
 
+/* ── Littoral ──────────────────────────────────────────────────────────────
+ * La Gironde en jaune pour le vent, et sa zone littorale (3310) en orange
+ * pour les vagues-submersion. Deux entrées identiques, sauf que la seconde
+ * suit aussi le littoral : la page montre ce que la case change à la carte. */
+// La façade atlantique en jaune pour le vent, Gironde comprise.
+// Et au large de la Gironde et des Landes, la bande orange des vagues-submersion.
+const COAST_MAP = franceMap(
+  pick({ yellow: ["33", "40", "64", "17", "85", "44", "56", "29"] }),
+  coastBand(["33", "40"], "orange")
+);
+
+function littoral(states, entry, withCoast) {
+  const sensor = (dept, name, level, phenomena) => {
+    states[`sensor.v_${entry}_${dept}_today`] = {
+      state: level,
+      attributes: {
+        entry_id: entry,
+        integration: "meteo_france_vigilance",
+        department: dept,
+        department_name: name,
+        period: "today",
+        color: level,
+        color_id: IDS[level],
+        color_name: NAMES[level],
+        color_hex: HEX[level],
+        expired: false,
+        begin_time: at(DAY, 0),
+        end_time: at(DAY, 24),
+        update_time: at(DAY, 6),
+        phenomena,
+        friendly_name: `Vigilance ${name} aujourd'hui`,
+      },
+    };
+  };
+  sensor("33", "Gironde", "yellow", [
+    P(DAY, 1, "yellow", 10, 20, [[0, 10, "green"], [10, 20, "yellow"], [20, 24, "green"]]),
+    P(DAY, 2, "green", 0, 24),
+    P(DAY, 3, "green", 0, 24),
+    P(DAY, 4, "green", 0, 24),
+  ]);
+  if (withCoast) {
+    sensor("3310", "Littoral Gironde", "orange", [
+      P(DAY, 9, "orange", 14, 24, [[0, 8, "green"], [8, 14, "yellow"], [14, 24, "orange"]]),
+    ]);
+  }
+  states[`image.v_${entry}_today`] = {
+    state: at(DAY, 6),
+    attributes: {
+      entry_id: entry,
+      integration: "meteo_france_vigilance",
+      period: "today",
+      entity_picture: COAST_MAP,
+      friendly_name: "Carte aujourd'hui",
+    },
+  };
+  return `sensor.v_${entry}_33_today`;
+}
+const coastOff = littoral(states, "lit0", false);
+const coastOn = littoral(states, "lit1", true);
+
 const hass = {
   locale: { language: "fr" },
   themes: { darkMode: dark },
@@ -475,6 +557,15 @@ try {
   } else if (page === "outre-mer-chrono") {
     stage.style.gridTemplateColumns = "430px";
     card({ entity: omCyclone, periods: "today", layout: "chronologie" }, null, null, 430);
+  } else if (page === "littoral") {
+    // La même Gironde, sans puis avec sa zone littorale : la submersion
+    // n'apparaît qu'à droite, et c'est elle qui fait passer la carte à l'orange.
+    // `&layout=` pour la vérifier dans les autres dispositions.
+    const layout = q.get("layout") || "duo";
+    stage.style.gridTemplateColumns = "380px 380px";
+    stage.style.alignItems = "start";
+    card({ entity: coastOff, periods: "today", layout }, "Le département seul", HEX.yellow, 380);
+    card({ entity: coastOn, periods: "today", layout }, "Avec « Suivre aussi le littoral »", HEX.orange, 380);
   } else if (page === "themes") {
     stage.style.gridTemplateColumns = "350px 350px";
     stage.style.alignItems = "start";
