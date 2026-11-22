@@ -32,6 +32,10 @@ entités `image`, une composition de cartes Lovelace.
   couleur de vigilance (`green`, `yellow`, `orange`, `red`), traduite par Home
   Assistant ; les phénomènes, leurs créneaux horaires et le commentaire
   national sont en attributs.
+- **Le littoral suivi d'office** : le phénomène vagues-submersion est publié
+  sur la zone littorale d'un département, pas sur le département. Une case
+  l'ajoute pour chaque département côtier suivi, avec son propre niveau, et la
+  carte le range avec les autres phénomènes.
 - **L'outre-mer** : Guadeloupe, Martinique, Guyane, La Réunion, Mayotte,
   Saint-Martin et Saint-Barthélemy — avec l'alerte cyclonique et les niveaux
   violet et gris que la métropole ne connaît pas. Aucune clé d'API n'est
@@ -61,7 +65,9 @@ entités `image`, une composition de cartes Lovelace.
 ## 🚨 Les quatre niveaux
 
 L'état du capteur est la couleur la plus grave du département ; chaque
-phénomène garde la sienne.
+phénomène garde la sienne. La zone littorale a son propre capteur et son
+propre niveau : une submersion orange sur la côte ne change pas la couleur du
+département.
 
 | Thème clair | Thème sombre |
 |:---:|:---:|
@@ -112,7 +118,9 @@ phénomène garde la sienne.
 
 1. **Paramètres → Appareils et services → Ajouter une intégration →
    « Vigilance Météo France »**.
-2. Choisir les départements et les territoires d'outre-mer à suivre.
+2. Choisir les départements et les territoires d'outre-mer à suivre. La case
+   « Suivre aussi le littoral », cochée d'origine, ajoute la zone littorale des
+   départements côtiers choisis.
 3. Saisir la clé d'API — nécessaire seulement si des départements
    métropolitains sont suivis ; l'outre-mer s'en passe.
 
@@ -129,7 +137,8 @@ change via **Reconfigurer**).
 
 | Option | Défaut | Rôle |
 |---|---|---|
-| Départements | — | Codes métropolitains suivis. Les zones littorales se saisissent à la main (`3010`, `6410`…) ; Andorre, retiré du bulletin par Météo France, n'est plus proposé |
+| Départements | — | Codes métropolitains suivis. Une zone littorale se saisit à la main par son code, celui du département suivi de `10` (`2B10`, `3310`…) : utile pour suivre le littoral d'un département que l'on ne suit pas. Andorre, retiré du bulletin par Météo France, n'est plus proposé |
+| Suivre aussi le littoral | activé | Météo France publie le phénomène **vagues-submersion** sur la zone littorale, pas sur le département. Cochée, l'option ajoute un appareil « Littoral » avec son propre niveau pour chaque département côtier suivi (`33` donne aussi `3310`). Sans effet pour un département sans façade maritime. Décochée, ces appareils sont retirés. Une zone saisie à la main à côté de son département (`33` et `3310`) suit la case ; saisie sans lui (`2B10` sans `2B`), elle reste suivie que la case soit cochée ou non |
 | Territoires d'outre-mer | — | Guadeloupe, Martinique, Guyane, La Réunion, Mayotte, Saint-Martin et Saint-Barthélemy — sans clé d'API |
 | Cartes nationales | activé | Télécharge les trois images de la carte de France (aujourd'hui, demain, et les deux jours côte à côte). Métropole uniquement |
 | Intervalle | 30 min | De 5 à 720 min. Le bulletin métropolitain est réémis à 6 h et 16 h, et corrigé entre-temps |
@@ -142,6 +151,13 @@ Pour chaque département, un appareil portant deux capteurs :
 
 * `sensor.vigilance_<département>_aujourd_hui`
 * `sensor.vigilance_<département>_demain`
+
+Une zone littorale suivie est un appareil de plus, « Vigilance Littoral
+<département> », avec les deux mêmes capteurs
+(`sensor.vigilance_littoral_<département>_aujourd_hui` et `…_demain`). Son seul
+phénomène est vagues-submersion, et son état est la couleur de ce phénomène.
+C'est la bande que la vignette nationale dessine le long de la côte, détachée
+du département.
 
 État : `green`, `yellow`, `orange`, `red` — une énumération traduite, donc
 lisible dans une automatisation (`to: "red"`) comme dans l'historique.
@@ -272,6 +288,13 @@ entity: sensor.vigilance_loiret_aujourd_hui
 C'est tout : le capteur de demain et les deux cartes de France sont retrouvés seuls,
 par les attributs que le composant leur donne. Aucun nom d'entité n'est deviné.
 
+Quand la zone littorale du département est suivie, la carte la retrouve de la
+même façon : vagues-submersion s'affiche parmi les phénomènes du département,
+et l'en-tête annonce le plus grave des deux niveaux. Les options `alert_only`
+et le thème `plein` en tiennent compte. Les capteurs, eux, restent distincts.
+Une zone littorale suivie sans son département (`2B10` seul) demande sa propre
+carte, pointée sur son capteur.
+
 ### Dispositions — `layout`
 
 | Valeur | Ce qu'elle montre |
@@ -345,7 +368,7 @@ Les deux axes sont indépendants — seize combinaisons.
 | `show_phenomena` | `true` | Les puces de phénomènes |
 | `show_comment` | `false` | Le commentaire national de Météo-France |
 | `hide_green` | `false` | Ne montrer que ce qui n'est pas vert |
-| `alert_only` | `false` | La carte disparaît du tableau de bord tant que rien n'atteint l'orange |
+| `alert_only` | `false` | La carte disparaît du tableau de bord tant que rien n'atteint l'orange, littoral du département compris |
 | `hide_map_inset` | `false` | Masque le libellé « Paris - Petite couronne » de la vignette |
 | `map_width` | — | Largeur maxi de la vignette, en pixels — la hauteur de la carte se réduit d'autant |
 | `force_columns` | `false` | En `duo`, garde les deux jours côte à côte même sur un écran étroit |

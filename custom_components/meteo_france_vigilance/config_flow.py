@@ -40,6 +40,7 @@ from .const import (
     CONF_API_KEY,
     CONF_BASINS,
     CONF_DEPARTMENTS,
+    CONF_LITTORAL,
     CONF_MAPS,
     CONF_SCAN_INTERVAL,
     DEFAULT_SCAN_INTERVAL,
@@ -47,6 +48,7 @@ from .const import (
     DOMAIN,
     MAX_SCAN_INTERVAL,
     MIN_SCAN_INTERVAL,
+    without_owned_littoral,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -123,6 +125,13 @@ def _settings_schema(defaults: Mapping[str, Any]) -> vol.Schema:
             vol.Optional(
                 CONF_DEPARTMENTS, default=list(defaults.get(CONF_DEPARTMENTS, []))
             ): DEPARTMENT_SELECTOR,
+            # Une seule case pour tous les départements : elle n'agit que là
+            # où le bulletin publie une zone littorale, donc ni dans la Creuse
+            # ni dans le Cantal. Un formulaire ne sait pas montrer un champ
+            # selon ce qui est choisi dans un autre.
+            vol.Required(
+                CONF_LITTORAL, default=defaults.get(CONF_LITTORAL, True)
+            ): BooleanSelector(),
             vol.Optional(
                 CONF_BASINS, default=list(defaults.get(CONF_BASINS, []))
             ): BASIN_SELECTOR,
@@ -203,7 +212,9 @@ class VigilanceConfigFlow(ConfigFlow, domain=DOMAIN):
         placeholders: dict[str, str] = {}
 
         if user_input is not None:
-            departments = list(user_input.get(CONF_DEPARTMENTS) or [])
+            departments = without_owned_littoral(
+                list(user_input.get(CONF_DEPARTMENTS) or [])
+            )
             basins = list(user_input.get(CONF_BASINS) or [])
             errors, known = await _async_validate(
                 self.hass, user_input.get(CONF_API_KEY, ""), departments, basins
@@ -217,6 +228,7 @@ class VigilanceConfigFlow(ConfigFlow, domain=DOMAIN):
                         CONF_BASINS: basins,
                     },
                     options={
+                        CONF_LITTORAL: user_input[CONF_LITTORAL],
                         CONF_MAPS: user_input[CONF_MAPS],
                         CONF_SCAN_INTERVAL: int(user_input[CONF_SCAN_INTERVAL]),
                     },
@@ -332,7 +344,9 @@ class VigilanceOptionsFlow(OptionsFlow):
         placeholders: dict[str, str] = {}
 
         if user_input is not None:
-            departments = list(user_input.get(CONF_DEPARTMENTS) or [])
+            departments = without_owned_littoral(
+                list(user_input.get(CONF_DEPARTMENTS) or [])
+            )
             basins = list(user_input.get(CONF_BASINS) or [])
             errors, known = await _async_validate(
                 self.hass, entry.data.get(CONF_API_KEY, ""), departments, basins
@@ -351,6 +365,7 @@ class VigilanceOptionsFlow(OptionsFlow):
                 )
                 return self.async_create_entry(
                     data={
+                        CONF_LITTORAL: user_input[CONF_LITTORAL],
                         CONF_MAPS: user_input[CONF_MAPS],
                         CONF_SCAN_INTERVAL: int(user_input[CONF_SCAN_INTERVAL]),
                     }

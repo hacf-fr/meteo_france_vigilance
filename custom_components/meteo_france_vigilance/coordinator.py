@@ -29,6 +29,7 @@ from .const import (
     COLORS,
     CONF_API_KEY,
     CONF_DEPARTMENTS,
+    CONF_LITTORAL,
     CONF_MAPS,
     COMBINED_MAP,
     CONF_SCAN_INTERVAL,
@@ -40,7 +41,9 @@ from .const import (
     UNKNOWN_PHENOMENON,
     color,
     department_name,
+    littoral_code,
     phenomenon,
+    without_owned_littoral,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -81,8 +84,17 @@ class VigilanceCoordinator(DataUpdateCoordinator[VigilanceData]):
         """Construire le coordinateur à partir de l'entrée de configuration."""
         options = {**entry.data, **entry.options}
         self.entry = entry
-        self.departments: list[str] = list(options.get(CONF_DEPARTMENTS, []))
+        # Une zone littorale saisie à côté de son département suit la case
+        # « littoral », comme si elle n'avait pas été saisie.
+        self.departments: list[str] = without_owned_littoral(
+            list(options.get(CONF_DEPARTMENTS, []))
+        )
         self.maps_enabled: bool = options.get(CONF_MAPS, True)
+        # Les zones littorales ajoutées d'office aux départements suivis.
+        # Remplie à la lecture du premier bulletin, donc avant la création des
+        # entités : c'est lui qui dit quels départements ont une côte.
+        self.littoral_enabled: bool = options.get(CONF_LITTORAL, True)
+        self.littoral: list[str] = []
         self.api = VigilanceApi(
             async_get_clientsession(hass), options[CONF_API_KEY]
         )
@@ -107,6 +119,40 @@ class VigilanceCoordinator(DataUpdateCoordinator[VigilanceData]):
                 minutes=int(options.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL))
             ),
         )
+
+    @property
+    def domains(self) -> list[str]:
+        """Tout ce qui est suivi : les départements choisis, puis leur littoral."""
+        return [*self.departments, *self.littoral]
+
+    def _detect_littoral(self, product: dict[str, Any]) -> None:
+        """Retenir les zones littorales des départements suivis.
+
+        Le phénomène vagues-submersion n'est pas publié sur le département
+        mais sur un domaine à part, « département + 10 ». Suivre la Gironde
+        sans suivre 3310 revient donc à ne jamais voir une submersion annoncée
+        à Lacanau. La zone reste un domaine distinct, avec son propre niveau :
+        le capteur du département garde la couleur que Météo France lui donne.
+
+        Une zone retenue le reste jusqu'au rechargement : un bulletin
+        incomplet ne doit pas faire disparaître ses capteurs.
+        """
+        if not self.littoral_enabled:
+            return
+        known = {
+            str(domain.get("domain_id"))
+            for period in product.get("periods", [])
+            for domain in period.get("timelaps", {}).get("domain_ids", [])
+        }
+        for code in self.departments:
+            zone = littoral_code(code)
+            if (
+                zone
+                and zone in known
+                and zone not in self.departments
+                and zone not in self.littoral
+            ):
+                self.littoral.append(zone)
 
     async def _async_update_data(self) -> VigilanceData:
         """Un cycle : le bulletin, puis les vignettes s'il a changé."""
@@ -281,6 +327,7 @@ class VigilanceCoordinator(DataUpdateCoordinator[VigilanceData]):
         """Transformer la réponse de l'API en données d'entités."""
         product = payload.get("product", {})
         self._check_api_version(product)
+        self._detect_littoral(product)
         data = VigilanceData(
             update_time=dt_util.parse_datetime(str(product.get("update_time") or ""))
             or None,
@@ -313,7 +360,7 @@ class VigilanceCoordinator(DataUpdateCoordinator[VigilanceData]):
 
             domains = (raw or {}).get("timelaps", {}).get("domain_ids", [])
             index = {str(d.get("domain_id")): d for d in domains}
-            for code in self.departments:
+            for code in self.domains:
                 data.departments.setdefault(code, {})[period] = self._department(
                     code, period, info, index.get(code)
                 )

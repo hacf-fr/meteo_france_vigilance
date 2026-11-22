@@ -55,6 +55,9 @@ const THEMES = ["officiel", "bandeau", "plein", "sobre"];
 const ALERT_COLORS = ["orange", "red"];
 const alerted = (state) => ALERT_COLORS.includes(state);
 
+// L'ordre des quatre couleurs, pour dire laquelle de deux est la plus grave.
+const RANK = { green: 1, yellow: 2, orange: 3, red: 4 };
+
 // Les couleurs officielles de la vigilance. Elles ne suivent pas le thème :
 // une vigilance orange est orange, c'est la convention que tout le monde lit.
 const LEVELS = {
@@ -514,7 +517,11 @@ class MeteoFranceVigilanceCard extends HTMLElement {
     // Le balayage des états est refait seulement si l'entité visée a changé
     // d'entrée ou de département, ou si l'une des entités trouvées a disparu —
     // pas à chaque rendu.
-    const key = `${entryId}|${department}`;
+    //
+    // Le nombre d'entités fait partie de la clé : cocher « Suivre aussi le
+    // littoral » crée des capteurs sans toucher à ceux qu'on a déjà trouvés,
+    // et la carte ne les verrait qu'au rechargement de la page.
+    const key = `${entryId}|${department}|${Object.keys(hass.states).length}`;
     if (
       this._resolved &&
       this._resolved.key === key &&
@@ -523,7 +530,10 @@ class MeteoFranceVigilanceCard extends HTMLElement {
       return this._resolved;
     }
 
-    const found = { key, sensors: {}, maps: {} };
+    const found = { key, sensors: {}, maps: {}, littoral: {} };
+    // La zone littorale du département : c'est elle qui porte le phénomène
+    // vagues-submersion, et la carte le range avec les autres.
+    const coast = department ? `${department}10` : null;
 
     for (const [id, state] of Object.entries(hass.states)) {
       const attrs = state.attributes;
@@ -531,6 +541,10 @@ class MeteoFranceVigilanceCard extends HTMLElement {
 
       if (id.startsWith("sensor.") && attrs.department === department) {
         found.sensors[attrs.period] = id;
+      } else if (
+        id.startsWith("sensor.") && coast && attrs.department === coast
+      ) {
+        found.littoral[attrs.period] = id;
       } else if (
         // `image.` depuis la v2, `camera.` avant elle : une carte doit
         // continuer d'afficher les vignettes d'une installation qui n'a pas
@@ -547,9 +561,50 @@ class MeteoFranceVigilanceCard extends HTMLElement {
     found.sensors[base.attributes.period || "today"] ??= this._config.entity;
     found.department = department;
     found.name = base.attributes.department_name || department;
-    found.ids = [...Object.values(found.sensors), ...Object.values(found.maps)];
+    found.ids = [
+      ...Object.values(found.sensors),
+      ...Object.values(found.maps),
+      ...Object.values(found.littoral),
+    ];
     this._resolved = found;
     return found;
+  }
+
+  /**
+   * Ce que la carte affiche pour une période : le département, complété de
+   * sa zone littorale quand elle est suivie.
+   *
+   * Les deux restent des capteurs distincts, chacun avec son niveau. Mais à
+   * l'écran, une submersion orange sous un bandeau « Vert » se lirait comme
+   * une erreur : la carte annonce donc le plus grave des deux, et range le
+   * phénomène du littoral parmi ceux du département.
+   */
+  _view(resolved, period) {
+    const base = this._state(resolved, period);
+    const coastId = resolved.littoral[period];
+    const coast = coastId ? this._hass.states[coastId] : null;
+    const attrs = base?.attributes || {};
+
+    // Un département indisponible ne se rattrape pas par son littoral, et un
+    // littoral indisponible n'ajoute rien.
+    if (!base || !RANK[base.state] || !coast || !RANK[coast.state]) {
+      return { state: base?.state, attrs };
+    }
+
+    const own = attrs.phenomena || [];
+    const seen = new Set(own.map((p) => p.phenomenon_id));
+    const phenomena = [
+      ...own,
+      ...(coast.attributes.phenomena || []).filter((p) => !seen.has(p.phenomenon_id)),
+    ].sort(
+      (a, b) =>
+        (b.color_id || 0) - (a.color_id || 0) || a.phenomenon_id - b.phenomenon_id
+    );
+
+    return {
+      state: RANK[coast.state] > RANK[base.state] ? coast.state : base.state,
+      attrs: { ...attrs, phenomena },
+    };
   }
 
   _periods() {
@@ -566,7 +621,7 @@ class MeteoFranceVigilanceCard extends HTMLElement {
   /** Vrai si l'une des périodes affichées atteint le seuil d'alerte. */
   _worst(resolved) {
     return this._periods().some((period) =>
-      alerted(this._state(resolved, period)?.state)
+      alerted(this._view(resolved, period).state)
     );
   }
 
@@ -844,7 +899,7 @@ class MeteoFranceVigilanceCard extends HTMLElement {
     // de la vignette : c'est tout l'objet de ce thème.
     const mapShown = parts.mapWrap.style.display !== "none";
     const banded =
-      this._config.theme === "plein" && alerted(this._state(resolved, main)?.state);
+      this._config.theme === "plein" && alerted(this._view(resolved, main).state);
     const overlaid = mapShown && !banded;
     parts.node.querySelector(".head.bare").style.display = overlaid ? "none" : "";
     parts.node.querySelector(".overlay").style.display = overlaid ? "" : "none";
@@ -887,9 +942,10 @@ class MeteoFranceVigilanceCard extends HTMLElement {
   /** En-tête, couleur de thème, ouverture de la fiche : vrai pour toutes. */
   _common(period, resolved, parts) {
     const sensorId = resolved.sensors[period];
-    const state = sensorId ? this._hass.states[sensorId] : null;
-    const attrs = state?.attributes || {};
-    const level = LEVELS[state?.state] || null;
+    // Le département et son littoral, vus ensemble — voir _view.
+    const state = this._view(resolved, period);
+    const attrs = state.attrs;
+    const level = LEVELS[state.state] || null;
 
     // La couleur du bloc alimente les quatre thèmes : la pastille, la tranche
     // du bandeau, l'aplat du plein, l'anneau du sobre. Outre-mer, c'est la

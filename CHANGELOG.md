@@ -1,5 +1,26 @@
 # Changelog
 
+## 2.3.0 — 2026-11-22
+
+### Nouveautés
+
+- **Vagues-submersion sans saisie manuelle** : Météo France publie ce
+  phénomène sur la zone littorale d'un département, pas sur le département
+  lui-même. Qui suivait la Haute-Corse ne le voyait donc jamais, sauf à
+  saisir `2B10` à la main. La nouvelle option « Suivre aussi le littoral »,
+  cochée par défaut, ajoute un appareil « Littoral » pour chaque département
+  côtier suivi, avec son propre niveau. Le capteur du département ne change
+  pas. Décocher l'option retire ces appareils. Sans effet pour un département
+  sans façade maritime.
+- **La saisie manuelle reste possible** pour le littoral d'un département que
+  l'on ne suit pas (`2B10` sans `2B`) : cette zone est suivie que la case soit
+  cochée ou non. Saisie à côté de son département (`33` et `3310`), elle suit
+  la case.
+- **La carte range le littoral avec le département** : quand la zone
+  littorale est suivie, la carte d'un département affiche vagues-submersion
+  parmi ses phénomènes, et annonce le plus grave des deux niveaux. L'option
+  `alert_only` et le thème `plein` en tiennent compte.
+
 ## 2.2.2 — 2026-11-01
 
 ### Corrections

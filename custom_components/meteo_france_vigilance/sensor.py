@@ -76,7 +76,9 @@ async def async_setup_entry(
     if runtime.metropole:
         entities += [
             VigilanceSensor(runtime.metropole, code, description)
-            for code in runtime.metropole.departments
+            # Les départements choisis et, si l'option est cochée, la zone
+            # littorale de ceux qui en ont une.
+            for code in runtime.metropole.domains
             for description in SENSORS
         ]
 

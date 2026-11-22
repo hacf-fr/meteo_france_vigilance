@@ -32,9 +32,19 @@ from homeassistant.const import EVENT_HOMEASSISTANT_STARTED, Platform
 from homeassistant.core import CoreState, HomeAssistant, ServiceCall, callback
 from homeassistant.exceptions import ServiceValidationError
 from homeassistant.helpers import config_validation as cv
+from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.typing import ConfigType
 
-from .const import CONF_BASINS, CONF_DEPARTMENTS, DOMAIN, SERVICE_REFRESH
+from .const import (
+    CONF_BASINS,
+    CONF_DEPARTMENTS,
+    CONF_LITTORAL,
+    DOMAIN,
+    SERVICE_REFRESH,
+    littoral_code,
+    littoral_parent,
+    without_owned_littoral,
+)
 from .coordinator import VigilanceCoordinator
 from .coordinator_om import VigilanceOmCoordinator
 from .frontend import JSModuleRegistration
@@ -139,9 +149,44 @@ async def async_setup_entry(hass: HomeAssistant, entry: VigilanceConfigEntry) ->
         await runtime.outre_mer.async_config_entry_first_refresh()
 
     entry.runtime_data = runtime
+    _async_remove_stale_littoral(hass, entry, options)
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     entry.async_on_unload(entry.add_update_listener(async_reload_entry))
     return True
+
+
+@callback
+def _async_remove_stale_littoral(
+    hass: HomeAssistant, entry: VigilanceConfigEntry, options: dict
+) -> None:
+    """Retirer les zones littorales qui ne sont plus suivies.
+
+    Décocher l'option, ou retirer un département, doit faire disparaître la
+    zone littorale ajoutée d'office — sans quoi son appareil resterait, avec
+    des capteurs « indisponibles » que la carte continuerait de trouver.
+
+    La liste attendue vient de la configuration, pas du bulletin : un
+    bulletin incomplet au démarrage ne doit rien supprimer. Et seules les
+    zones littorales sont concernées. Une zone saisie à la main sans son
+    département est attendue, donc conservée ; saisie à côté de lui, elle
+    suit la case comme les autres.
+    """
+    departments = without_owned_littoral(list(options.get(CONF_DEPARTMENTS, [])))
+    expected = set(departments)
+    if options.get(CONF_LITTORAL, True):
+        expected |= {zone for code in departments if (zone := littoral_code(code))}
+
+    registry = dr.async_get(hass)
+    prefix = f"{entry.entry_id}_"
+    for device in dr.async_entries_for_config_entry(registry, entry.entry_id):
+        for domain, identifier in device.identifiers:
+            if domain != DOMAIN or not identifier.startswith(prefix):
+                continue
+            code = identifier.removeprefix(prefix)
+            if littoral_parent(code) and code not in expected:
+                registry.async_update_device(
+                    device.id, remove_config_entry_id=entry.entry_id
+                )
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: VigilanceConfigEntry) -> bool:

@@ -63,6 +63,9 @@ CONF_DEPARTMENTS: Final = "departments"
 CONF_BASINS: Final = "basins"
 CONF_SCAN_INTERVAL: Final = "scan_interval"
 CONF_MAPS: Final = "maps"
+# Suivre d'office la zone littorale de chaque département côtier : c'est elle,
+# et non le département, qui porte le phénomène vagues-submersion.
+CONF_LITTORAL: Final = "littoral"
 
 # La carte est réémise à 6 h et 16 h, et corrigée entre-temps en cas
 # d'aggravation. Trente minutes suivent ces corrections sans peser sur le quota
@@ -497,9 +500,42 @@ def department_name(code: str) -> str:
     """
     if code in DEPARTMENTS:
         return DEPARTMENTS[code]
-    if len(code) == 4 and code.endswith("10") and code[:2] in DEPARTMENTS:
-        return f"Littoral {DEPARTMENTS[code[:2]]}"
+    parent = littoral_parent(code)
+    if parent:
+        return f"Littoral {DEPARTMENTS[parent]}"
     return code
+
+
+def littoral_code(code: str) -> str | None:
+    """Le code de la zone littorale qu'aurait un département.
+
+    Qu'aurait, et non qu'a : la Creuse n'a pas de côte, et seul le bulletin
+    dit quelles zones existent. Ne vaut que pour les codes à deux caractères —
+    ni « FRA », ni l'outre-mer, ni une zone littorale elle-même.
+    """
+    if len(code) == 2 and code in DEPARTMENTS:
+        return f"{code}10"
+    return None
+
+
+def without_owned_littoral(codes: list[str]) -> list[str]:
+    """Les domaines choisis, sans les zones littorales que la case gouverne.
+
+    Saisir `2B10` à côté de `2B` dit la même chose que cocher « Suivre aussi
+    le littoral » : la zone est alors retirée de la liste et suit la case,
+    sans quoi la décocher laisserait un littoral affiché. Une zone dont le
+    département n'est pas suivi (`3310` sans `33`) n'a pas de case qui la
+    gouverne : elle reste un choix à part entière.
+    """
+    chosen = set(codes)
+    return [code for code in codes if littoral_parent(code) not in chosen]
+
+
+def littoral_parent(code: str) -> str | None:
+    """Le département dont ce code est la zone littorale, s'il en est une."""
+    if len(code) == 4 and code.endswith("10") and code[:2] in DEPARTMENTS:
+        return code[:2]
+    return None
 
 
 def phenomenon(phenomenon_id: int) -> dict[str, str]:

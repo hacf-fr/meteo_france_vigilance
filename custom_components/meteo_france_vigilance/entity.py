@@ -12,7 +12,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.helpers.device_registry import DeviceEntryType, DeviceInfo
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .const import BASINS, DOMAIN, department_name
+from .const import BASINS, DOMAIN, department_name, littoral_parent
 from .coordinator import VigilanceCoordinator
 
 
@@ -49,14 +49,17 @@ def department_device_info(entry: ConfigEntry, code: str) -> DeviceInfo:
             ),
         )
 
+    # Une zone littorale n'a pas de page à elle : le site la montre sur celle
+    # de son département.
+    parent = littoral_parent(code)
     return DeviceInfo(
         identifiers={(DOMAIN, f"{entry.entry_id}_{code}")},
         name=f"Vigilance {department_name(code)}",
         manufacturer="Météo France",
-        model=f"Département {code}",
+        model=f"Zone littorale {code}" if parent else f"Département {code}",
         entry_type=DeviceEntryType.SERVICE,
         via_device=(DOMAIN, entry.entry_id),
-        configuration_url=f"https://vigilance.meteofrance.fr/fr/{code}",
+        configuration_url=f"https://vigilance.meteofrance.fr/fr/{parent or code}",
     )
 
 

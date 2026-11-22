@@ -7,13 +7,15 @@
         "data": {
           "api_key": "Clé d'API",
           "departments": "Départements",
+          "littoral": "Suivre aussi le littoral",
           "maps": "Télécharger les cartes nationales",
           "scan_interval": "Intervalle de mise à jour",
           "basins": "Territoires d'outre-mer"
         },
         "data_description": {
           "api_key": "La clé d'application affichée sur portail-api.meteofrance.fr, dans votre abonnement « DonneesPubliquesVigilance ». Nécessaire seulement pour les départements métropolitains.",
-          "departments": "Un ou plusieurs codes de département métropolitain. Les zones littorales peuvent être saisies directement (3010, 6410…). Laissez vide pour ne suivre que l'outre-mer.",
+          "departments": "Un ou plusieurs codes de département métropolitain. Pour suivre le littoral d'un département que vous ne suivez pas, saisissez son code suivi de 10 (2B10, 3310…). Laissez vide pour ne suivre que l'outre-mer.",
+          "littoral": "Météo France publie le phénomène vagues-submersion sur la zone littorale, pas sur le département. Cochée, cette case ajoute un appareil « Littoral » avec son propre niveau pour chaque département côtier suivi. Sans effet pour un département sans façade maritime. Une zone littorale saisie à la main sans son département reste suivie que la case soit cochée ou non.",
           "maps": "Les deux vignettes nationales, aujourd'hui et demain, publiées en images. Métropole uniquement.",
           "scan_interval": "Le bulletin est réémis à 6 h et 16 h, et corrigé entre-temps en cas d'aggravation.",
           "basins": "Guadeloupe, Martinique, Guyane, La Réunion, Mayotte, Saint-Martin et Saint-Barthélemy. Aucune clé n'est nécessaire pour ces territoires : leurs données proviennent du site de vigilance de Météo France, et non de l'API publique — Météo France n'en publie pas pour l'outre-mer. Cet accès n'est pas contractuel et peut changer sans préavis."
@@ -54,12 +56,14 @@
         "title": "Vigilance Météo France",
         "data": {
           "departments": "Départements",
+          "littoral": "Suivre aussi le littoral",
           "maps": "Télécharger les cartes nationales",
           "scan_interval": "Intervalle de mise à jour",
           "basins": "Territoires d'outre-mer"
         },
         "data_description": {
-          "departments": "Un ou plusieurs codes de département métropolitain. Les zones littorales peuvent être saisies directement (3010, 6410…). Laissez vide pour ne suivre que l'outre-mer.",
+          "departments": "Un ou plusieurs codes de département métropolitain. Pour suivre le littoral d'un département que vous ne suivez pas, saisissez son code suivi de 10 (2B10, 3310…). Laissez vide pour ne suivre que l'outre-mer.",
+          "littoral": "Météo France publie le phénomène vagues-submersion sur la zone littorale, pas sur le département. Cochée, cette case ajoute un appareil « Littoral » avec son propre niveau pour chaque département côtier suivi. Sans effet pour un département sans façade maritime. Une zone littorale saisie à la main sans son département reste suivie que la case soit cochée ou non.",
           "maps": "Les deux vignettes nationales, aujourd'hui et demain, publiées en images. Métropole uniquement.",
           "scan_interval": "Le bulletin est réémis à 6 h et 16 h, et corrigé entre-temps en cas d'aggravation.",
           "basins": "Guadeloupe, Martinique, Guyane, La Réunion, Mayotte, Saint-Martin et Saint-Barthélemy. Aucune clé n'est nécessaire pour ces territoires : leurs données proviennent du site de vigilance de Météo France, et non de l'API publique — Météo France n'en publie pas pour l'outre-mer. Cet accès n'est pas contractuel et peut changer sans préavis."

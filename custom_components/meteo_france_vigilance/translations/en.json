@@ -7,13 +7,15 @@
         "data": {
           "api_key": "API key",
           "departments": "Departments",
+          "littoral": "Also follow the coastline",
           "maps": "Download the national maps",
           "scan_interval": "Update interval",
           "basins": "Overseas territories"
         },
         "data_description": {
           "api_key": "The application key shown on portail-api.meteofrance.fr, under your « DonneesPubliquesVigilance » subscription. Only needed for mainland departments.",
-          "departments": "One or more mainland department codes. Coastal areas can be typed in directly (3010, 6410…). Leave empty to follow the overseas territories only.",
+          "departments": "One or more mainland department codes. To follow the coastline of a department you do not follow, type its code followed by 10 (2B10, 3310…). Leave empty to follow the overseas territories only.",
+          "littoral": "Météo-France publishes the coastal flooding (vagues-submersion) phenomenon on the coastal area, not on the department. When ticked, a “Littoral” device with its own level is added for every coastal department you follow. No effect on a department without a coastline. A coastal area typed in without its department stays followed whether the box is ticked or not.",
           "maps": "The two national thumbnails, today and tomorrow, published as image entities. Mainland only.",
           "scan_interval": "The bulletin is reissued at 06:00 and 16:00, and corrected in between when the situation worsens.",
           "basins": "Guadeloupe, Martinique, French Guiana, Réunion, Mayotte, Saint Martin and Saint Barthélemy. No key is needed for these territories: their data comes from the Météo France vigilance website rather than the public API — Météo France publishes none for the overseas territories. This access is not contractual and may change without notice."
@@ -54,12 +56,14 @@
         "title": "Météo France vigilance",
         "data": {
           "departments": "Departments",
+          "littoral": "Also follow the coastline",
           "maps": "Download the national maps",
           "scan_interval": "Update interval",
           "basins": "Overseas territories"
         },
         "data_description": {
-          "departments": "One or more mainland department codes. Coastal areas can be typed in directly (3010, 6410…). Leave empty to follow the overseas territories only.",
+          "departments": "One or more mainland department codes. To follow the coastline of a department you do not follow, type its code followed by 10 (2B10, 3310…). Leave empty to follow the overseas territories only.",
+          "littoral": "Météo-France publishes the coastal flooding (vagues-submersion) phenomenon on the coastal area, not on the department. When ticked, a “Littoral” device with its own level is added for every coastal department you follow. No effect on a department without a coastline. A coastal area typed in without its department stays followed whether the box is ticked or not.",
           "maps": "The two national thumbnails, today and tomorrow, published as image entities. Mainland only.",
           "scan_interval": "The bulletin is reissued at 06:00 and 16:00, and corrected in between when the situation worsens.",
           "basins": "Guadeloupe, Martinique, French Guiana, Réunion, Mayotte, Saint Martin and Saint Barthélemy. No key is needed for these territories: their data comes from the Météo France vigilance website rather than the public API — Météo France publishes none for the overseas territories. This access is not contractual and may change without notice."
