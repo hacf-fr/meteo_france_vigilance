@@ -1651,7 +1651,12 @@ class MeteoFranceVigilanceCard extends HTMLElement {
       @media (pointer: coarse) {
         .icon-row { gap: 10px; }
         .icon-row ha-icon { padding: 8px; margin: -8px; }
-        .chip { padding-block: 8px; margin-block: -5px; }
+        /* Au doigt, les puces sont plus hautes. Sans marge négative pour
+           reprendre ce rembourrage : passées sur deux lignes, les puces se
+           chevauchaient de quatre pixels (issue #2). Et une marge n'avait
+           rien à protéger — une puce mène au même endroit que le bloc du
+           jour qui l'entoure, un doigt qui la manque y tombe. */
+        .chip { padding-block: 8px; }
         .tl-row { padding: 9px 0; margin-block: -5px; }
       }
       .empty, .comment, .foot, .tl-quiet {

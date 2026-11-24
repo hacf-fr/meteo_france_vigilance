@@ -1,5 +1,14 @@
 # Changelog
 
+## 2.3.1 — 2026-11-24
+
+### Corrections
+
+- **Les puces ne se chevauchent plus sur téléphone** : sur un écran tactile,
+  quand les phénomènes passaient sur deux lignes (colonne étroite, `duo`
+  avec `force_columns`…), les puces empiétaient de quelques pixels les unes
+  sur les autres. Elles gardent leur taille, avec un vrai espace entre elles.
+
 ## 2.3.0 — 2026-11-22
 
 ### Nouveautés

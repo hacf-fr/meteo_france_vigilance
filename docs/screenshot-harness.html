@@ -107,6 +107,19 @@ customElements.define("ha-card", HaCard);
 <script src="france-depts.js"></script>
 
 <script>
+/* `?pointer=coarse` : les règles réservées aux écrans tactiles, appliquées
+ * sur un ordinateur. Chrome headless n'a pas de doigt, et c'est pourtant sur
+ * un téléphone que la carte est la plus serrée. Le reste de la feuille de
+ * style est celui du composant, sans retouche. */
+if (new URLSearchParams(location.search).get("pointer") === "coarse") {
+  const original = Object.getOwnPropertyDescriptor(MeteoFranceVigilanceCard, "styles").get;
+  Object.defineProperty(MeteoFranceVigilanceCard, "styles", {
+    get() { return original.call(this).replaceAll("@media (pointer: coarse)", "@media all"); },
+  });
+}
+</script>
+
+<script>
 /* ── Vignette nationale factice ──────────────────────────────────────────
  * Contours réels (DEPT_PATHS / IDF_PATHS, voir france-depts.js) colorés
  * département par département, dans le style de la vraie vignette : liserés
@@ -475,6 +488,40 @@ function littoral(states, entry, withCoast) {
 const coastOff = littoral(states, "lit0", false);
 const coastOn = littoral(states, "lit1", true);
 
+/* Issue #2 : deux jours en jaune, vent violent et pluie-inondation, le reste
+ * en vert. C'est le seul cas où une colonne étroite fait passer les puces
+ * sur deux lignes. */
+function windAndRain(states, entry) {
+  for (const [period, day] of [["today", DAY], ["tomorrow", NEXT]]) {
+    states[`sensor.v_${entry}_${period}`] = {
+      state: "yellow",
+      attributes: {
+        entry_id: entry,
+        integration: "meteo_france_vigilance",
+        department: "28",
+        department_name: "Eure-et-Loir",
+        period,
+        color: "yellow", color_id: 2, color_name: "Jaune", color_hex: HEX.yellow,
+        expired: false,
+        begin_time: at(day, 0), end_time: at(day, 24), update_time: at(DAY, 6),
+        phenomena: [
+          P(day, 1, "yellow", 6, 18), P(day, 2, "yellow", 8, 20),
+          P(day, 3, "green", 0, 24), P(day, 4, "green", 0, 24),
+        ],
+      },
+    };
+    states[`image.v_${entry}_${period}`] = {
+      state: at(DAY, 6),
+      attributes: {
+        entry_id: entry, integration: "meteo_france_vigilance", period,
+        entity_picture: MAPS.yellow,
+      },
+    };
+  }
+  return `sensor.v_${entry}_today`;
+}
+const issue2 = windAndRain(states, "is2");
+
 const hass = {
   locale: { language: "fr" },
   themes: { darkMode: dark },
@@ -557,6 +604,18 @@ try {
   } else if (page === "outre-mer-chrono") {
     stage.style.gridTemplateColumns = "430px";
     card({ entity: omCyclone, periods: "today", layout: "chronologie" }, null, null, 430);
+  } else if (page === "issue2") {
+    // La configuration de la capture : duo forcé sur deux colonnes, sans
+    // titre ni heure, phénomènes verts masqués, vignette sans fond.
+    // `&card=` pour la largeur de la carte en pixels CSS.
+    const w = +(q.get("card") || 372);
+    stage.style.gridTemplateColumns = `${w}px`;
+    stage.style.padding = "8px";
+    card({
+      entity: issue2, layout: "duo", theme: "officiel", title: "",
+      force_columns: true, hide_green: true, transparent_map: true,
+      hide_map_inset: true, show_update_time: false,
+    }, null, null, w);
   } else if (page === "littoral") {
     // La même Gironde, sans puis avec sa zone littorale : la submersion
     // n'apparaît qu'à droite, et c'est elle qui fait passer la carte à l'orange.

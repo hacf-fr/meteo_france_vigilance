@@ -29,6 +29,12 @@ chrome --headless=new --disable-gpu --allow-file-access-from-files \
 | `littoral&layout=focus` | la même, en focus → `littoral-focus-<mode>.png` | 840,560 |
 | `littoral&layout=compact` | la même, en compact → `littoral-compact-<mode>.png` | 840,170 |
 | `littoral&layout=chronologie` | la même, en chronologie → `littoral-chrono-<mode>.png` | 840,340 |
+| `issue2` | la carte de l'issue #2 : duo forcé, deux puces par jour (`&card=` pour la largeur) | 440,345 |
+
+`&pointer=coarse` applique les règles réservées aux écrans tactiles : c'est
+sur un téléphone que la carte est la plus serrée, et Chrome headless n'en
+simule pas. Pour la largeur d'un téléphone, ajouter
+`--force-device-scale-factor=3.5`.
 
 Chaque page existe en `mode=light` et `mode=dark`. Les fichiers vont dans
 `images/` sous le nom `<page>-<mode>.png`.
