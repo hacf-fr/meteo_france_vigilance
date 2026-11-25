@@ -1,5 +1,20 @@
 # Changelog
 
+## 2.3.2 — 2026-11-25
+
+### Corrections
+
+- **La carte ne déborde plus dans une section** : dans une vue
+  « sections », la carte demandait une hauteur fixe, trop courte pour son
+  contenu. Elle débordait sous la carte suivante, sous le bouton d'ajout de
+  carte, et hors de la zone de modification. Sa hauteur est désormais
+  automatique. Une hauteur choisie à la poignée est respectée : la carte s'y
+  resserre en réduisant ses vignettes.
+- **À vérifier si vous aviez réglé la hauteur à la poignée** : jusqu'ici la
+  carte ignorait ce réglage et débordait. Elle le respecte désormais ; si la
+  hauteur choisie est trop petite, le bas de la carte est coupé. Agrandissez
+  la carte à la poignée, ou remettez sa hauteur sur « auto ».
+
 ## 2.3.1 — 2026-11-24
 
 ### Corrections

@@ -84,16 +84,20 @@ class HaIcon extends HTMLElement {
 }
 customElements.define("ha-icon", HaIcon);
 
+/* Comme le vrai : ses styles sont dans « :host », que la feuille de la carte
+ * peut surcharger. Posés en style en ligne, ils écrasaient le « display:
+ * flex » de la carte, et une carte dans une cellule de section ne se
+ * resserrait plus sur sa hauteur. */
 class HaCard extends HTMLElement {
   connectedCallback() {
-    const s = this.style;
-    s.display = "block";
-    s.background = "var(--card-background-color)";
-    s.borderRadius = "var(--ha-card-border-radius, 12px)";
-    s.border = "1px solid var(--ha-card-border-color, rgba(0,0,0,0.12))";
-    s.color = "var(--primary-text-color)";
-    s.position = "relative";
-    s.overflow = "hidden";
+    if (this.shadowRoot) return;
+    this.attachShadow({ mode: "open" }).innerHTML = `<style>:host {
+      display: block; box-sizing: border-box; position: relative;
+      background: var(--card-background-color);
+      border-radius: var(--ha-card-border-radius, 12px);
+      border: 1px solid var(--ha-card-border-color, rgba(0,0,0,0.12));
+      color: var(--primary-text-color);
+    }</style><slot></slot>`;
   }
 }
 customElements.define("ha-card", HaCard);
@@ -522,6 +526,42 @@ function windAndRain(states, entry) {
 }
 const issue2 = windAndRain(states, "is2");
 
+/* Issue #3 : une section de tableau de bord. Home Assistant y donne à
+ * chaque carte une cellule de hauteur fixe, d'après les lignes qu'elle
+ * demande (`getGridOptions`) : 56 px par ligne, 8 px entre deux. La carte
+ * est posée dans un `hui-card` en ligne, comme dans le vrai frontend, et une
+ * autre carte la suit pour voir si elle déborde dessus. */
+const herault = dataset(states, "is3", "34", "Hérault", "green", "green");
+function section(config, label) {
+  const sec = document.createElement("div");
+  sec.className = "cell";
+  sec.style.cssText = "width:492px; display:grid; row-gap:8px; align-content:start";
+  if (label) {
+    const cap = document.createElement("div");
+    cap.className = "caption";
+    cap.textContent = label;
+    sec.appendChild(cap);
+  }
+  const el = document.createElement("meteo-france-vigilance-card");
+  el.setConfig(config);
+  el.hass = hass;
+  // `rows` de la configuration d'abord, comme le fait la section ; « auto »
+  // laisse la cellule prendre la hauteur de la carte.
+  const rows = config.grid_options?.rows ?? el.getGridOptions().rows;
+  const cell = document.createElement("div");
+  const height = typeof rows === "number" ? `height:${rows * 64 - 8}px;` : "";
+  cell.style.cssText = `position:relative; ${height} outline:2px dashed #03a9f4; border-radius:12px`;
+  const wrapper = document.createElement("hui-card");
+  wrapper.appendChild(el);
+  cell.appendChild(wrapper);
+  sec.appendChild(cell);
+  const next = document.createElement("div");
+  next.style.cssText = "position:relative; height:120px; border-radius:12px; background:#9e9e9e; color:#fff; display:grid; place-items:center; font:16px sans-serif";
+  next.textContent = "Carte suivante";
+  sec.appendChild(next);
+  stage.appendChild(sec);
+}
+
 const hass = {
   locale: { language: "fr" },
   themes: { darkMode: dark },
@@ -604,6 +644,12 @@ try {
   } else if (page === "outre-mer-chrono") {
     stage.style.gridTemplateColumns = "430px";
     card({ entity: omCyclone, periods: "today", layout: "chronologie" }, null, null, 430);
+  } else if (page === "issue3") {
+    // La cellule de 5 lignes, en pointillé bleu, et la carte suivante en gris.
+    stage.style.gridTemplateColumns = "492px 492px";
+    stage.style.alignItems = "start";
+    section({ entity: herault }, "Duo, hauteur automatique");
+    section({ entity: herault, grid_options: { rows: 7 } }, "Duo, 7 lignes fixées à la poignée");
   } else if (page === "issue2") {
     // La configuration de la capture : duo forcé sur deux colonnes, sans
     // titre ni heure, phénomènes verts masqués, vignette sans fond.

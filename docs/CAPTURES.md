@@ -30,6 +30,7 @@ chrome --headless=new --disable-gpu --allow-file-access-from-files \
 | `littoral&layout=compact` | la même, en compact → `littoral-compact-<mode>.png` | 840,170 |
 | `littoral&layout=chronologie` | la même, en chronologie → `littoral-chrono-<mode>.png` | 840,340 |
 | `issue2` | la carte de l'issue #2 : duo forcé, deux puces par jour (`&card=` pour la largeur) | 440,345 |
+| `issue3` | une section de tableau de bord : cellule en pointillé, carte suivante en gris | 1060,700 |
 
 `&pointer=coarse` applique les règles réservées aux écrans tactiles : c'est
 sur un téléphone que la carte est la plus serrée, et Chrome headless n'en

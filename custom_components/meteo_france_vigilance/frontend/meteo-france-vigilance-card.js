@@ -482,19 +482,20 @@ class MeteoFranceVigilanceCard extends HTMLElement {
 
   /** Vues « sections » : la hauteur suit ce que la disposition demande. */
   getGridOptions() {
-    // Ce que la carte demande dépend de ce qu'elle montre : une ligne compacte
-    // se contente d'un quart de vue, une chronologie de deux journées réclame
-    // de la hauteur. `rows` n'est qu'une proposition — min et max activent les
-    // poignées de redimensionnement des vues « sections ».
-    const deux = this._periods().length > 1;
-    const carte = this._config.show_map;
+    // La hauteur est automatique : la cellule prend celle de la carte. Un
+    // nombre de lignes fixé d'avance ne pouvait pas convenir — la hauteur
+    // dépend du nombre de puces, du commentaire, de la largeur — et la carte
+    // débordait de sa cellule sur la suivante (issue #3), ou laissait un vide
+    // sous elle. Min et max gardent les poignées de redimensionnement des
+    // vues « sections » : une hauteur choisie à la poignée, la carte s'y
+    // resserre en réduisant ses vignettes.
     const spec = {
-      compact: { rows: deux ? 2 : 1, min_rows: 1, min_columns: 3, columns: 6 },
-      chronologie: { rows: deux ? 8 : 4, min_rows: 3, min_columns: 6, columns: 12 },
-      focus: { rows: carte ? 6 : 2, min_rows: 2, min_columns: 4, columns: 12 },
-      duo: { rows: carte ? 5 : 3, min_rows: 2, min_columns: 4, columns: 12 },
+      compact: { min_rows: 1, min_columns: 3, columns: 6 },
+      chronologie: { min_rows: 3, min_columns: 6, columns: 12 },
+      focus: { min_rows: 2, min_columns: 4, columns: 12 },
+      duo: { min_rows: 2, min_columns: 4, columns: 12 },
     }[this._config.layout];
-    return { ...spec, max_rows: 12 };
+    return { ...spec, rows: "auto", max_rows: 12 };
   }
 
   // ── Résolution des entités ──────────────────────────────────────────────
@@ -1372,8 +1373,14 @@ class MeteoFranceVigilanceCard extends HTMLElement {
     return `
       /* La carte remplit la hauteur que la vue lui accorde — en vue
          « sections », celle que l'utilisateur règle à la poignée — et son
-         contenu s'y ajuste au lieu de déborder. */
-      :host { display: block; min-width: 0; }
+         contenu s'y ajuste au lieu de déborder.
+
+         La hauteur est celle de la cellule que la section donne à la carte,
+         d'après ses lignes : sans « height: 100% » ici, la carte prenait sa
+         hauteur naturelle, sortait de la cellule et passait sous la carte
+         suivante (issue #3). Hors section, la cellule n'a pas de hauteur
+         fixée, et la carte garde la sienne. */
+      :host { display: block; height: 100%; min-width: 0; }
       ha-card {
         padding: 12px; overflow: hidden;
         height: 100%; box-sizing: border-box;
