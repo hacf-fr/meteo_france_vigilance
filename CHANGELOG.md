@@ -1,5 +1,18 @@
 # Changelog
 
+## 2.3.3 — 2026-11-25
+
+### Corrections
+
+- **Le nom du territoire dans le titre** (outre-mer) : la carte d'un
+  territoire s'intitulait « Vigilance VIGI971 » au lieu de « Vigilance
+  Guadeloupe ». L'attribut `department_name` du capteur porte de nouveau le
+  nom du territoire.
+- **Plus de ligne « Demain » vide** (outre-mer) : Météo France ne publie pas
+  de vigilance du lendemain pour l'outre-mer, et la carte affichait une ligne
+  « Demain » sans rien dedans. Elle n'affiche plus que les jours qui ont un
+  capteur.
+
 ## 2.3.2 — 2026-11-25
 
 ### Corrections

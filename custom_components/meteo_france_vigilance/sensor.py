@@ -172,7 +172,12 @@ class VigilanceSensor(VigilanceEntity, SensorEntity):
             # `available` est déjà porté par l'entité elle-même.
             if key != "available"
         }
-        attributes["department_name"] = department_name(self._code)
+        # Le nom vient du coordinateur, qui connaît les bassins d'outre-mer.
+        # Le recalculer ici depuis la seule table des départements donnait le
+        # code à leur place : « VIGI971 » au lieu de « Guadeloupe ».
+        attributes["department_name"] = state.get("department_name") or department_name(
+            self._code
+        )
         attributes["update_time"] = data.update_time if data else None
         attributes["global_color_id"] = data.global_max_color_id if data else None
         attributes["entry_id"] = self._entry.entry_id

@@ -609,9 +609,17 @@ class MeteoFranceVigilanceCard extends HTMLElement {
   }
 
   _periods() {
-    if (this._config.periods === "today") return ["today"];
-    if (this._config.periods === "tomorrow") return ["tomorrow"];
-    return PERIODS;
+    const wanted =
+      this._config.periods === "today" ? ["today"]
+      : this._config.periods === "tomorrow" ? ["tomorrow"]
+      : PERIODS;
+    // Seulement les jours qui ont un capteur : l'outre-mer ne publie pas de
+    // « demain », et la carte lui ajoutait une ligne vide. Si aucun des jours
+    // demandés n'en a, la demande reste telle quelle — la carte dira
+    // qu'elle n'a pas de données plutôt que de ne rien montrer.
+    const sensors = this._resolved?.sensors;
+    const found = sensors ? wanted.filter((period) => sensors[period]) : wanted;
+    return found.length ? found : wanted;
   }
 
   _state(resolved, period) {
@@ -630,7 +638,15 @@ class MeteoFranceVigilanceCard extends HTMLElement {
 
   _render() {
     if (!this._hass) return;
-    if (!this._built) this._build();
+    // Les entités d'abord : ce sont elles qui disent quels jours existent, et
+    // donc quelle structure construire. Elle est refaite si la liste change
+    // — un capteur de demain qui apparaît, une carte pointée ailleurs.
+    const resolved = this._resolve();
+    const periods = this._periods().join();
+    if (!this._built || this._builtPeriods !== periods) {
+      this._build();
+      this._builtPeriods = periods;
+    }
 
     // Home Assistant tient ce drapeau à jour tout seul — thème choisi à la
     // main comme thème suivant le système. La carte n'a qu'à le recopier :
@@ -646,8 +662,6 @@ class MeteoFranceVigilanceCard extends HTMLElement {
       this._parts.card.style.removeProperty("--mfv-map-width");
     }
 
-
-    const resolved = this._resolve();
     if (!resolved) {
       this.style.display = "";
       this._parts.error.textContent = `${this._config.entity} — ${words(this._hass).noData}`;
